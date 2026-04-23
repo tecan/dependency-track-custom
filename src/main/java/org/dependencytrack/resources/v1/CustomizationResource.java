@@ -118,7 +118,15 @@ public class CustomizationResource extends AbstractConfigPropertyResource {
             response.put("sequencePadding", sequencePaddingProp != null
                     ? Integer.parseInt(sequencePaddingProp.getPropertyValue())
                     : Integer.parseInt(ConfigPropertyConstants.VULNERABILITY_ID_SEQUENCE_PADDING.getDefaultPropertyValue()));
-            
+
+            // Get use custom ID toggle
+            ConfigProperty useCustomProp = qm.getConfigProperty(
+                    ConfigPropertyConstants.VULNERABILITY_ID_USE_CUSTOM.getGroupName(),
+                    ConfigPropertyConstants.VULNERABILITY_ID_USE_CUSTOM.getPropertyName());
+            response.put("useCustomId", useCustomProp != null
+                    ? Boolean.parseBoolean(useCustomProp.getPropertyValue())
+                    : Boolean.parseBoolean(ConfigPropertyConstants.VULNERABILITY_ID_USE_CUSTOM.getDefaultPropertyValue()));
+
             return Response.ok(response.toString()).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -158,6 +166,7 @@ public class CustomizationResource extends AbstractConfigPropertyResource {
     public Response getTextPlaceholderSettings() {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
             final JSONObject response = new JSONObject();
+            response.put("enabled", Boolean.parseBoolean(getConfigPropertyValue(qm, ConfigPropertyConstants.TEXT_PLACEHOLDER_ENABLED)));
             response.put("descriptionPlaceholder", getConfigPropertyValue(qm, ConfigPropertyConstants.TEXT_PLACEHOLDER_CREATE_DESCRIPTION));
             response.put("detailPlaceholder", getConfigPropertyValue(qm, ConfigPropertyConstants.TEXT_PLACEHOLDER_CREATE_DETAIL));
             response.put("recommendationPlaceholder", getConfigPropertyValue(qm, ConfigPropertyConstants.TEXT_PLACEHOLDER_CREATE_RECOMMENDATION));
@@ -269,7 +278,13 @@ public class CustomizationResource extends AbstractConfigPropertyResource {
             // Update sequence padding
             updateConfigProperty(qm, ConfigPropertyConstants.VULNERABILITY_ID_SEQUENCE_PADDING,
                     String.valueOf(json.getInt("sequencePadding")));
-            
+
+            // Update use custom ID toggle
+            if (json.has("useCustomId")) {
+                updateConfigProperty(qm, ConfigPropertyConstants.VULNERABILITY_ID_USE_CUSTOM,
+                        String.valueOf(json.getBoolean("useCustomId")));
+            }
+
             return Response.noContent().build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -301,6 +316,7 @@ public class CustomizationResource extends AbstractConfigPropertyResource {
         try (QueryManager qm = new QueryManager(getAlpineRequest())) {
             final JSONObject json = new JSONObject(jsonInput);
             final String[] supportedKeys = new String[] {
+                    "enabled",
                     "descriptionPlaceholder",
                     "detailPlaceholder",
                     "recommendationPlaceholder",
@@ -333,6 +349,10 @@ public class CustomizationResource extends AbstractConfigPropertyResource {
                         .build();
             }
 
+            if (json.has("enabled")) {
+                updateConfigProperty(qm, ConfigPropertyConstants.TEXT_PLACEHOLDER_ENABLED,
+                        String.valueOf(json.getBoolean("enabled")));
+            }
             if (json.has("descriptionPlaceholder")) {
                 updateConfigProperty(qm, ConfigPropertyConstants.TEXT_PLACEHOLDER_CREATE_DESCRIPTION,
                         json.getString("descriptionPlaceholder"));
