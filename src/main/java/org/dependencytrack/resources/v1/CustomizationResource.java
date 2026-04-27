@@ -46,7 +46,23 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * JAX-RS resource for managing application customizations including vulnerability ID configuration.
+ * JAX-RS resource for managing application customization settings.
+ *
+ * <p>All settings managed here are persisted in the standard {@code CONFIGPROPERTY} table using
+ * the same group/name structure as the upstream {@code /v1/configProperty} API. These endpoints
+ * are domain-specific facades over that storage layer and exist to provide:
+ * <ul>
+ *   <li>Strongly-typed, curated JSON responses (e.g. {@code orgCode}, {@code template}) instead
+ *       of raw {@code ConfigProperty} model objects</li>
+ *   <li>Business-rule validation before persistence (e.g. padding bounds, reset policy enum,
+ *       required JSON structure for matrix/source configs)</li>
+ *   <li>Atomic multi-property updates (vulnerability ID has 6 related properties saved together)</li>
+ * </ul>
+ *
+ * <p>Note for upstream contributors: the underlying data can also be read and written via the
+ * existing {@code GET/POST /v1/configProperty} endpoints using the group and property names
+ * defined in {@link org.dependencytrack.model.ConfigPropertyConstants}. The two API surfaces
+ * are fully compatible — both read from and write to the same database rows.
  */
 @Path("/v1/customization")
 @Tag(name = "Customization", description = "Endpoints for managing application customizations")
@@ -570,9 +586,12 @@ public class CustomizationResource extends AbstractConfigPropertyResource {
     /**
      * Updates or creates a ConfigProperty with the given constant and value.
      *
+     * <p>This mirrors the persistence logic in {@code ConfigPropertyResource} — the same
+     * {@code CONFIGPROPERTY} row is written regardless of which API surface is used.
+     *
      * @param qm The QueryManager
-     * @param propertyConstant The ConfigPropertyConstants constant
-     * @param value The new value
+     * @param propertyConstant The ConfigPropertyConstants constant identifying the row
+     * @param value The new value to persist
      */
     private void updateConfigProperty(QueryManager qm, ConfigPropertyConstants propertyConstant,
                                       String value) {
