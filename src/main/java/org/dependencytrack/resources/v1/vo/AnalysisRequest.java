@@ -142,6 +142,26 @@ public class AnalysisRequest {
                 analysisDetails, comment, null, null, null, null, null, null, suppressed, null);
     }
 
+    public AnalysisRequest(String project,
+                           String component,
+                           String vulnerability,
+                           AnalysisState analysisState,
+                           AnalysisJustification analysisJustification,
+                           AnalysisResponse analysisResponse,
+                           String analysisDetails,
+                           String comment,
+                           String riskImpact,
+                           String riskLikelihood,
+                           String residualRiskImpact,
+                           String residualRiskLikelihood,
+                           String riskJustification,
+                           String residualRiskJustification,
+                           Boolean suppressed) {
+        this(project, component, vulnerability, analysisState, analysisJustification, analysisResponse,
+                analysisDetails, comment, riskImpact, riskLikelihood, residualRiskImpact, residualRiskLikelihood,
+                riskJustification, residualRiskJustification, suppressed, null);
+    }
+
     public String getProject() {
         return project;
     }
